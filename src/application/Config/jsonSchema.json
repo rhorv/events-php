@@ -1,0 +1,35 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "description": "RFC 4122 Compliant UUID of the message",
+      "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+      "examples": [
+        "622178f0-7dc8-41b6-88a9-2ce0f0934066"
+      ]
+    },
+    "name": {
+      "description": "message name",
+      "type": "string",
+      "pattern": "^[a-z_\\.-]+$",
+      "examples": [
+        "task_started"
+      ]
+    },
+    "payload": {
+      "description": "Payload of the message",
+      "type": "object"
+    },
+    "occurredAt": {
+      "description": "Date and time when the subject of the message occurred (ISO 8601)",
+      "type": "string",
+      "format": "date-time",
+      "examples": [
+        "2018-09-15T15:53:00+01:00"
+      ]
+    }
+  },
+  "required": [ "id", "name", "payload", "occurredAt" ]
+}

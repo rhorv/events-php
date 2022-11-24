@@ -1,0 +1,6 @@
+.env
+.idea
+vendor
+composer.phar
+src/Config/Params/*.yml
+

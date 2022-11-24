@@ -1,0 +1,84 @@
+services:
+
+  # event dispatcher
+  internal_dispatcher:
+    class: Symfony\Component\EventDispatcher\EventDispatcher
+    calls:
+      - [addListener, ['test_happened', ["@test_handler",'handle']]]
+
+  # event listeners
+  test_handler:
+    class: MyApp\Handler\TestHandler
+    arguments:
+      - "@publisher"
+
+  jsonDeserializer:
+    class: Events\Formatter\JsonDeserializer
+    arguments:
+      - "application/Config/jsonSchema.json"
+
+  jsonSerializer:
+    class: Events\Formatter\JsonSerializer
+
+  dispatcher:
+    class: Events\Dispatcher\SymfonyDispatcher\SymfonyDispatcher
+    arguments:
+      - "@internal_dispatcher"
+
+  consumer:
+    class: Events\Consumer\DirectInputConsumer
+    arguments:
+      - "@deserializer"
+      - "@dispatcher"
+      - "@publisher"
+    calls:
+      - [messageToConsume, ['{"id": "e897a4e8-0224-4bac-bf0f-04a2ba1558d8", "name": "test_happened", "payload": {"field1": "value1", "field2": "value2"}, "occurredAt": "2021-08-31T15:00:47+00:00"}']]
+
+  compressionSerializerDecorator:
+    class: Events\Formatter\CompressionSerializerDecorator
+    arguments:
+      - "@jsonSerializer"
+
+  compressionDeserializerDecorator:
+    class: Events\Formatter\CompressionDeserializerDecorator
+    arguments:
+      - "@jsonDeserializer"
+
+  serializer: "@compressionSerializerDecorator"
+  deserializer: "@compressionDeserializerDecorator"
+
+#  serializer: "@jsonSerializer"
+#  deserializer: "@jsonDeserializer"
+
+
+  rabbit_consumer:
+    class: Events\Consumer\RabbitMqConsumer
+    arguments:
+      - "localhost"
+      - 5672
+      - "fetcher"
+      - "fetcher123"
+      - "fetcher"
+      - "@dispatcher"
+      - "@deserializer"
+      - "@publisher"
+
+  rabbit_publisher:
+    class: Events\Publisher\RabbitMqPublisher
+    arguments:
+      - "localhost"
+      - 5672
+      - "fetcher"
+      - "fetcher123"
+      - "fetcher"
+      - "@serializer"
+
+  publisher:
+    class: Events\Publisher\Buffer
+    arguments:
+      - "@real_publisher"
+
+  real_publisher:
+    class: Events\Publisher\StdOutPublisher
+    arguments:
+      - "@serializer"
